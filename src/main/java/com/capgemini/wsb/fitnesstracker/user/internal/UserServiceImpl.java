@@ -7,8 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,33 @@ class UserServiceImpl implements UserService, UserProvider {
     @Override
     public List<User> findAllUsers() {
         return userRepository.findAll();
+    }
+
+
+    @Override
+    public User updateUser(User user) {
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("User ID is required for update!");
+        }
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public List<User> searchUsersByEmail(String email) {
+        return userRepository.findByEmailContainingIgnoreCase(email);
+    }
+
+    @Override
+    public List<User> searchUsersByAgeGreaterThan(int age) {
+        LocalDate now = LocalDate.now();
+        return userRepository.findAll().stream()
+                .filter(user -> Period.between(user.getBirthdate(), now).getYears() > age)
+                .collect(Collectors.toList());
     }
 
 }
